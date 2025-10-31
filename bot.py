@@ -15,21 +15,28 @@ from dotenv import load_dotenv
 class ActivityTracker:
     def __init__(self):
         self.df = pd.read_csv("values.csv")
+        self.csv_file = "values.csv"
         self.last_active = time.time()
-        self.df.loc[self.df["activity"] == "work", "time"] = 0
-        self.df.loc[self.df["activity"] == "brainrot", "time"] = 0
+        self.clear_stats()
         
         keyboard.on_press(lambda e: self.update_activity())
         mouse.on_click(lambda: self.update_activity())
         
     def update_activity(self):
         self.last_active = time.time()
-        
+    
+    def save_csv(self):
+        self.df.to_csv(self.csv_file, index=False)
+    
+    def clear_stats(self):
+        self.df["time"] = 0
+        self.save_csv()
+
     def add_csv_time(self, activity):
         updated_time_amount = int(self.df.loc[self.df["activity"] == activity, "time"].item()) + 10
         self.df.loc[self.df["activity"] == activity, "time"] = updated_time_amount
-        self.df.to_csv("values.csv", index=False)
-    
+        self.save_csv()
+
     def check_activity(self):
         idle_time = time.time() - self.last_active
         current_activity = GetWindowText(GetForegroundWindow())
